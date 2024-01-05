@@ -5,6 +5,7 @@ from django.contrib import admin
 from django_bouncy.models import Bounce, Complaint, Delivery
 
 
+@admin.register(Bounce)
 class BounceAdmin(admin.ModelAdmin):
     """Admin model for 'Bounce' objects"""
     list_display = (
@@ -16,6 +17,7 @@ class BounceAdmin(admin.ModelAdmin):
     search_fields = ('address',)
 
 
+@admin.register(Complaint)
 class ComplaintAdmin(admin.ModelAdmin):
     """Admin model for 'Complaint' objects"""
     list_display = ('address', 'mail_from', 'feedback_type')
@@ -23,6 +25,7 @@ class ComplaintAdmin(admin.ModelAdmin):
     search_fields = ('address',)
 
 
+@admin.register(Delivery)
 class DeliveryAdmin(admin.ModelAdmin):
     """Admin model for 'Delivery' objects"""
     list_display = ('address', 'mail_from')
@@ -30,6 +33,3 @@ class DeliveryAdmin(admin.ModelAdmin):
     search_fields = ('address',)
 
 
-admin.site.register(Bounce, BounceAdmin)
-admin.site.register(Complaint, ComplaintAdmin)
-admin.site.register(Delivery, DeliveryAdmin)
