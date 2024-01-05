@@ -1,8 +1,8 @@
-from django.conf.urls import url, include
+from django.urls import include, path
 from django.contrib import admin
 
 admin.autodiscover()
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^bouncy/', include('django_bouncy.urls')),
+    path('admin/', include(admin.site.urls)),
+    path('bouncy/', include('django_bouncy.urls')),
 ]

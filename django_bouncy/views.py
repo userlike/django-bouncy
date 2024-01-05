@@ -47,13 +47,13 @@ def endpoint(request):
     # If necessary, check that the topic is correct
     if hasattr(settings, 'BOUNCY_TOPIC_ARN'):
         # Confirm that the proper topic header was sent
-        if 'HTTP_X_AMZ_SNS_TOPIC_ARN' not in request.META:
+        if 'x-amz-sns-topic-arn' not in request.headers:
             return HttpResponseBadRequest('No TopicArn Header')
 
         # Check to see if the topic is in the settings
         # Because you can have bounces and complaints coming from multiple
         # topics, BOUNCY_TOPIC_ARN is a list
-        if (not request.META['HTTP_X_AMZ_SNS_TOPIC_ARN']
+        if (not request.headers['x-amz-sns-topic-arn']
                 in settings.BOUNCY_TOPIC_ARN):
             return HttpResponseBadRequest('Bad Topic')
 
