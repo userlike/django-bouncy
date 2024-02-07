@@ -1,4 +1,4 @@
-Django==1.11.23
+Django==3.2.24
 nose
 django-nose
 coverage
