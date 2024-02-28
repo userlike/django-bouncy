@@ -1,8 +1,6 @@
-Django==3.2.24
-nose
-django-nose
+Django==4.2.10
 coverage
 mock
-pyopenssl>=0.13.1
-pem>=16.0.0
+pyopenssl>=22.1.0
+pem>=21.1.0
 python-dateutil
