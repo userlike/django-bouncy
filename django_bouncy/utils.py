@@ -33,7 +33,7 @@ import dateutil.parser
 
 from django_bouncy import signals
 
-NOTIFICATION_HASH_FORMAT = u'''Message
+NOTIFICATION_HASH_FORMAT = """Message
 {Message}
 MessageId
 {MessageId}
@@ -43,9 +43,9 @@ TopicArn
 {TopicArn}
 Type
 {Type}
-'''
+"""
 
-SUBSCRIPTION_HASH_FORMAT = u'''Message
+SUBSCRIPTION_HASH_FORMAT = """Message
 {Message}
 MessageId
 {MessageId}
@@ -59,7 +59,7 @@ TopicArn
 {TopicArn}
 Type
 {Type}
-'''
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ def grab_keyfile(cert_url):
     for all SNS requests. So we need to keep a copy of the cert in our
     cache
     """
-    key_cache = caches[getattr(settings, 'BOUNCY_KEY_CACHE', 'default')]
+    key_cache = caches[getattr(settings, "BOUNCY_KEY_CACHE", "default")]
 
     pemfile = key_cache.get(cert_url)
     if not pemfile:
@@ -84,8 +84,8 @@ def grab_keyfile(cert_url):
 
         # A proper certificate file will contain 1 certificate
         if len(certificates) != 1:
-            logger.error('Invalid Certificate File: URL %s', cert_url)
-            raise ValueError('Invalid Certificate File')
+            logger.error("Invalid Certificate File: URL %s", cert_url)
+            raise ValueError("Invalid Certificate File")
 
         key_cache.set(cert_url, pemfile)
     return pemfile
@@ -97,18 +97,17 @@ def verify_notification(data):
 
     Returns True if verfied, False if not verified
     """
-    pemfile = grab_keyfile(data['SigningCertURL'])
+    pemfile = grab_keyfile(data["SigningCertURL"])
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, pemfile)
-    signature = base64.decodestring(six.b(data['Signature']))
+    signature = base64.decodebytes(six.b(data["Signature"]))
 
-    if data['Type'] == "Notification":
+    if data["Type"] == "Notification":
         hash_format = NOTIFICATION_HASH_FORMAT
     else:
         hash_format = SUBSCRIPTION_HASH_FORMAT
 
     try:
-        crypto.verify(
-            cert, signature, six.b(hash_format.format(**data)), 'sha1')
+        crypto.verify(cert, signature, six.b(hash_format.format(**data)), "sha1")
     except crypto.Error:
         return False
     return True
@@ -121,29 +120,25 @@ def approve_subscription(data):
     We don't do a ton of verification here, past making sure that the endpoint
     we're told to go to to verify the subscription is on the correct host
     """
-    url = data['SubscribeURL']
+    url = data["SubscribeURL"]
 
     domain = urlparse(url).netloc
     pattern = getattr(
-        settings,
-        'BOUNCY_SUBSCRIBE_DOMAIN_REGEX',
-        r"sns.[a-z0-9\-]+.amazonaws.com$"
+        settings, "BOUNCY_SUBSCRIBE_DOMAIN_REGEX", r"sns.[a-z0-9\-]+.amazonaws.com$"
     )
     if not re.search(pattern, domain):
-        logger.error('Invalid Subscription Domain %s', url)
-        return HttpResponseBadRequest('Improper Subscription Domain')
+        logger.error("Invalid Subscription Domain %s", url)
+        return HttpResponseBadRequest("Improper Subscription Domain")
 
     try:
         result = urlopen(url).read()
-        logger.info('Subscription Request Sent %s', url)
+        logger.info("Subscription Request Sent %s", url)
     except urllib.HTTPError as error:
         result = error.read()
-        logger.warning('HTTP Error Creating Subscription %s', str(result))
+        logger.warning("HTTP Error Creating Subscription %s", str(result))
 
     signals.subscription.send(
-        sender='bouncy_approve_subscription',
-        result=result,
-        notification=data
+        sender="bouncy_approve_subscription", result=result, notification=data
     )
 
     # Return a 200 Status Code

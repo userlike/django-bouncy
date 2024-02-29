@@ -1,23 +1,16 @@
-DATABASE_ENGINE = 'sqlite3'
+DATABASE_ENGINE = "sqlite3"
 
-SECRET_KEY = 'abcd123'
+SECRET_KEY = "abcd123"
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': './example.db',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "./example.db",
     }
 }
 
-INSTALLED_APPS = (
-    'django_bouncy',
-)
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-BOUNCY_TOPIC_ARN = ['arn:aws:sns:us-east-1:250214102493:Demo_App_Unsubscribes']
+INSTALLED_APPS = ("django_bouncy",)
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--with-xunit',
-    '--nologcapture',
-    '--cover-package=django_bouncy',
-]
+BOUNCY_TOPIC_ARN = ["arn:aws:sns:us-east-1:250214102493:Demo_App_Unsubscribes"]

@@ -3,6 +3,6 @@ from django.contrib import admin
 
 admin.autodiscover()
 urlpatterns = [
-    path('admin/', include(admin.site.urls)),
-    path('bouncy/', include('django_bouncy.urls')),
+    path("admin/", admin.site.urls),
+    path("bouncy/", include("django_bouncy.urls")),
 ]
