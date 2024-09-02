@@ -1,4 +1,4 @@
-Django==4.2.10
+Django==4.2.11
 coverage
 mock
 pyopenssl>=22.1.0
