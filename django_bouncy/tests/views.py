@@ -7,13 +7,7 @@ from django.test.utils import override_settings
 from django.http import Http404
 from django.conf import settings
 from django.dispatch import receiver
-try:
-    # Python 2.6/2.7
-    from mock import patch
-except ImportError:
-    # Python 3
-    # from unittest.mock import patch
-    from mock import patch
+from unittest.mock import patch
 
 from django_bouncy.tests.helpers import BouncyTestCase, loader
 from django_bouncy import views, signals
@@ -38,7 +32,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
 
     def test_success(self):
         """Test a successful request"""
-        self.request._body = json.dumps(self.notification)
+        self.request._body = json.dumps(self.notification).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.content.decode('ascii'), 'Bounce Processed')
@@ -50,7 +44,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         Based on http://stackoverflow.com/questions/3817213/
         """
         # pylint: disable=attribute-defined-outside-init, unused-variable
-        self.request._body = json.dumps(self.notification)
+        self.request._body = json.dumps(self.notification).encode()
         self.signal_count = 0
 
         @receiver(signals.notification)
@@ -71,7 +65,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
     @override_settings(BOUNCY_TOPIC_ARN=['Bad ARN'])
     def test_bad_topic(self):
         """Test the response if the topic does not match the settings"""
-        self.request._body = json.dumps(self.notification)
+        self.request._body = json.dumps(self.notification).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(result.content.decode('ascii'), 'Bad Topic')
@@ -79,21 +73,21 @@ class BouncyEndpointViewTest(BouncyTestCase):
     def test_no_header(self):
         """Test the results if the request does not have a topic header"""
         request = self.factory.post('/')
-        request._body = json.dumps(self.notification)
+        request._body = json.dumps(self.notification).encode()
         result = views.endpoint(request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(result.content.decode('ascii'), 'No TopicArn Header')
 
     def test_invalid_json(self):
         """Test if the notification does not have a JSON body"""
-        self.request._body = "This Is Not JSON"
+        self.request._body = b"This Is Not JSON"
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(result.content.decode('ascii'), 'Not Valid JSON')
 
     def test_missing_necessary_key(self):
         """Test if the notification is missing vital keys"""
-        self.request._body = json.dumps({})
+        self.request._body = json.dumps({}).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(
@@ -103,7 +97,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         """Test an unknown notification type"""
         notification = loader('bounce_notification')
         notification['Type'] = 'NotAKnownType'
-        self.request._body = json.dumps(notification)
+        self.request._body = json.dumps(notification).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(
@@ -113,7 +107,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         """Test an unknown certificate hostname"""
         notification = loader('bounce_notification')
         notification['SigningCertURL'] = 'https://baddomain.com/cert.pem'
-        self.request._body = json.dumps(notification)
+        self.request._body = json.dumps(notification).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(
@@ -128,7 +122,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         settings.BOUNCY_AUTO_SUBSCRIBE = False
         with self.assertRaises(Http404):
             notification = loader('subscriptionconfirmation')
-            self.request._body = json.dumps(notification)
+            self.request._body = json.dumps(notification).encode()
             views.endpoint(self.request)
         settings.BOUNCY_AUTO_SUBSCRIBE = original_setting
 
@@ -137,7 +131,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         """Test that a approve_subscription is called"""
         mock.return_value = 'Test Return Value'
         notification = loader('subscriptionconfirmation')
-        self.request._body = json.dumps(notification)
+        self.request._body = json.dumps(notification).encode()
         result = views.endpoint(self.request)
         self.assertTrue(mock.called)
         self.assertEqual(result, 'Test Return Value')
@@ -146,7 +140,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         """Test that an unsubscribe notification is properly ignored"""
         notification = loader('bounce_notification')
         notification['Type'] = 'UnsubscribeConfirmation'
-        self.request._body = json.dumps(notification)
+        self.request._body = json.dumps(notification).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
@@ -158,7 +152,7 @@ class BouncyEndpointViewTest(BouncyTestCase):
         """Test that a non-JSON message is properly ignored"""
         notification = loader('bounce_notification')
         notification['Message'] = 'Non JSON Message'
-        self.request._body = json.dumps(notification)
+        self.request._body = json.dumps(notification).encode()
         result = views.endpoint(self.request)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(

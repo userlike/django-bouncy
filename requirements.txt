@@ -1,6 +1,5 @@
-Django==4.2.15
+Django>=4.2
 coverage
-mock
-pyopenssl>=22.1.0
+cryptography>=39
 pem>=21.1.0
 python-dateutil

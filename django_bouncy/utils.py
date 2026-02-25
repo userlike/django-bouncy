@@ -1,29 +1,17 @@
-# -*- coding: utf-8 -*-
 """Utility functions for the django_bouncy app"""
-try:
-    import urllib2 as urllib
-except ImportError:
-    import urllib
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-except ImportError:
-    # Python 2.7
-    from urllib import urlopen
-
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from urllib.request import urlopen
+from urllib.parse import urlparse
+from urllib.error import HTTPError
 
 import base64
 import re
 import pem
 import logging
-import six
 
-from OpenSSL import crypto
+from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.primitives.hashes import SHA1
+from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
+from cryptography.exceptions import InvalidSignature
 from django.conf import settings
 from django.core.cache import caches
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -98,8 +86,11 @@ def verify_notification(data):
     Returns True if verfied, False if not verified
     """
     pemfile = grab_keyfile(data["SigningCertURL"])
-    cert = crypto.load_certificate(crypto.FILETYPE_PEM, pemfile)
-    signature = base64.decodebytes(six.b(data["Signature"]))
+    cert = load_pem_x509_certificate(
+        pemfile if isinstance(pemfile, bytes) else pemfile.encode()
+    )
+    public_key = cert.public_key()
+    signature = base64.decodebytes(data["Signature"].encode())
 
     if data["Type"] == "Notification":
         hash_format = NOTIFICATION_HASH_FORMAT
@@ -107,8 +98,10 @@ def verify_notification(data):
         hash_format = SUBSCRIPTION_HASH_FORMAT
 
     try:
-        crypto.verify(cert, signature, six.b(hash_format.format(**data)), "sha1")
-    except crypto.Error:
+        public_key.verify(
+            signature, hash_format.format(**data).encode(), PKCS1v15(), SHA1()
+        )
+    except InvalidSignature:
         return False
     return True
 
@@ -133,7 +126,7 @@ def approve_subscription(data):
     try:
         result = urlopen(url).read()
         logger.info("Subscription Request Sent %s", url)
-    except urllib.HTTPError as error:
+    except HTTPError as error:
         result = error.read()
         logger.warning("HTTP Error Creating Subscription %s", str(result))
 
@@ -142,7 +135,7 @@ def approve_subscription(data):
     )
 
     # Return a 200 Status Code
-    return HttpResponse(six.u(result))
+    return HttpResponse(result)
 
 
 def clean_time(time_string):
