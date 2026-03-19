@@ -1,6 +1,4 @@
 """Models for the django_bouncy app"""
-from __future__ import unicode_literals
-
 from django.db import models
 
 
@@ -19,7 +17,7 @@ class Feedback(models.Model):
     feedback_timestamp = models.DateTimeField(
         verbose_name="Feedback Time", null=True, blank=True)
 
-    class Meta(object):
+    class Meta:
         """Meta info for Feedback Abstract Model"""
         abstract = True
 
@@ -72,6 +70,6 @@ class Delivery(Feedback):
         return "%s Delivery (email sender: from %s)" % (
             self.address, self.mail_from)
 
-    class Meta(object):
+    class Meta:
         """Meta info for the Delivery model"""
         verbose_name_plural = 'deliveries'

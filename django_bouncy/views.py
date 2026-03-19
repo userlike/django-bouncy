@@ -1,9 +1,6 @@
 """Views for the django_bouncy app"""
 import json
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+from urllib.parse import urlparse
 
 import re
 import logging
@@ -58,12 +55,7 @@ def endpoint(request):
             return HttpResponseBadRequest('Bad Topic')
 
     # Load the JSON POST Body
-    if isinstance(request.body, str):
-        # requests return str in python 2.7
-        request_body = request.body
-    else:
-        # and return bytes in python 3.4
-        request_body = request.body.decode()
+    request_body = request.body.decode()
     try:
         data = json.loads(request_body)
     except ValueError:

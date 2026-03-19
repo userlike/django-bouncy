@@ -25,7 +25,7 @@ setup(
     install_requires=[
         "Django>=4.2",
         "python-dateutil>=2.8",
-        "pyopenssl>=22.1.0",
+        "cryptography>=39",
         "pem>=21.1.0",
     ],
     keywords="aws ses sns seacucumber boto",
@@ -33,5 +33,13 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP",
+        "Framework :: Django",
+        "Framework :: Django :: 4.2",
+        "Framework :: Django :: 5.2",
+        "Framework :: Django :: 6.0",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.12",
     ],
+    python_requires=">=3.10",
 )

@@ -1,12 +1,7 @@
 """Tests for utils.py in the django-bouncy app"""
 from django.conf import settings
 from django.dispatch import receiver
-try:
-    # Python 2.6/2.7
-    from mock import Mock, patch
-except ImportError:
-    # Python 3
-    from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from django_bouncy.tests.helpers import BouncyTestCase, loader
 from django_bouncy import utils, signals
